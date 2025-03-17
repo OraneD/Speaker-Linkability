@@ -1,1 +1,1 @@
-from .get_avg_embs import get_avg_tensor
+from .get_avg_embs import get_avg_tensor, get_utt2spk, get_spk2embs
