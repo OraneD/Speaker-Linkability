@@ -1,9 +1,15 @@
 
-from kiwano.embedding import read_pkl, write_pkl, EmbeddingSet
+from embedding import read_pkl
 import torch
+import torch.nn.functional as F
 import pickle
 import random
-from utils import get_avg_tensor
+from utils import get_avg_tensor, setup_logger
+
+#TO DO : - Save utterances picked during averaging in set B
+#        - Implement Logger
+#        - Implement __get_item() func
+#        - Add DocString
 
 class SimMatrix():
     def __init__(self, enroll_path, trial_path,L,seed):
@@ -17,6 +23,8 @@ class SimMatrix():
         self.enroll_ids = self.__map_enroll_ids()
         self.trial_matrix = self.__get_trial_matrix()
         self.enroll_matrix = self.__get_enroll_matrix()
+        self.similarity_matrix = self.__compute_cosine_similarity()
+    
 
     def __map_trial_ids(self):
         return {spk_id : idx for idx, spk_id in enumerate(list(self.trial_embeddings.keys()))}
@@ -30,13 +38,11 @@ class SimMatrix():
                 next_id += 1
         return enroll_ids
 
-
     def __get_enroll_matrix(self):
             embeddings_list = [torch.tensor(self.enroll_embeddings.h[spk_id]) for spk_id in sorted(self.enroll_ids, key=self.enroll_ids.get)]
             return torch.stack(embeddings_list) 
 
     def __get_trial_matrix(self):
-
         if self.L == 1 :
             embeddings_list = [torch.tensor(random.sample(self.trial_embeddings[spk_id], 1)[0]) 
                                 for spk_id in  sorted(self.trial_ids, key=self.trial_ids.get)]
@@ -45,7 +51,6 @@ class SimMatrix():
             embeddings_list = [torch.tensor(self.compute_random_avg(self.trial_embeddings[spk_id])) 
                                 for spk_id in  sorted(self.trial_ids, key=self.trial_ids.get)]
             return torch.stack(embeddings_list)
-
 
     def compute_random_avg(self, lst_tensor):
         if len(lst_tensor) >= self.L: # If there is more embeddings then needed for 1 speaker, we randomly select L embeddings
@@ -56,16 +61,15 @@ class SimMatrix():
         else :                        # If there's not enough embedding for the speaker, we compute the average embedding with all embeddings from the speaker anyway
          return get_avg_tensor(lst_tensor) 
 
-
+    def __compute_cosine_similarity(self):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        trial_matrix = F.normalize(self.trial_matrix).to(device)
+        enroll_matrix = F.normalize(self.enroll_matrix).to(device)
+        return torch.mm(trial_matrix, enroll_matrix.T)
 
                       
-
 matrix = SimMatrix("../data/embs_avg_cv11-A_Vox2_libri-54_anon_B5.pkl", "../data/spk2embs_cv11-B_Vox2_libri-54_anon_B5.pkl",10, 42)
 print(matrix.trial_matrix.shape)
-for i, key in enumerate(matrix.trial_ids.keys()):
-    if matrix.trial_ids[key] == matrix.enroll_ids[key] :
-        print(key)
-        print(f"{matrix.trial_ids[key]}, {matrix.enroll_ids[key]}, ok")
-    else:
-        print(f"not ok at index {i}")
+print(matrix.similarity_matrix.shape)
+print(matrix.similarity_matrix[:5, :5])
 
