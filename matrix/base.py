@@ -4,6 +4,8 @@ import torch
 import torch.nn.functional as F
 import pickle
 import random
+from tqdm import tqdm
+import os
 from utils import get_avg_tensor, setup_logger
 
 #TO DO : - Save utterances picked during averaging in set B
@@ -12,7 +14,7 @@ from utils import get_avg_tensor, setup_logger
 #        - Add DocString
 
 class SimMatrix():
-    def __init__(self, enroll_path, trial_path,L,seed):
+    def __init__(self, enroll_path, trial_path,L,seed, matrix_path=None):
         self.enroll_embeddings = read_pkl(f"pkl:{enroll_path}")
         with open(trial_path, "rb") as handle :
             self.trial_embeddings = pickle.load(handle)
@@ -23,8 +25,15 @@ class SimMatrix():
         self.enroll_ids = self.__map_enroll_ids()
         self.trial_matrix = self.__get_trial_matrix()
         self.enroll_matrix = self.__get_enroll_matrix()
-        self.similarity_matrix = self.__compute_cosine_similarity()
-    
+        self.similarity_matrix = self.__compute_cosine_similarity() if matrix_path == None else torch.load(matrix_path)
+
+    def __getitem__(self, index):
+        if isinstance(index,int):
+            return self.similarity_matrix[index][index]
+        elif isinstance(index,str):
+            return self.enroll_ids[index]
+        else:
+            raise TypeError("Invalid argument type, must be int or str")
     
 
     def __map_trial_ids(self):
@@ -69,10 +78,36 @@ class SimMatrix():
         cosine_matrix = torch.mm(trial_matrix, enroll_matrix.T)
         torch.save(cosine_matrix, f"../data/final_matrix/cosine_matrix_L-{self.L}_seed-{self.seed}.pt")
         return cosine_matrix
+    
+    def get_scores(self, N, seed):
+        os.makedirs(f"../experiment/matrix_L-{self.L}", exist_ok=True)
+        torch.manual_seed(seed)
+        transposed_sim_matrix = self.similarity_matrix.T
+        inversed_enroll_ids = {v: k for k, v in self.enroll_ids.items()}
+        inversed_trial_ids = {v: k for k, v in self.trial_ids.items()}
+        scores_dictionary = {}
+        for spk_id in tqdm(self.trial_ids.values(), total=len(self.trial_ids), desc="Computing score for each trial speaker..."):
+            column = transposed_sim_matrix[spk_id] # We get the column for the corresponding speaker (every score of the current speaker vs all the enrolls)
+            idx_column = torch.arange(len(column))
+            mask = idx_column != spk_id # We remove the score of the speaker vs himself so that it won't be randomly chosen
+            idx_enroll = idx_column[mask]
+            idx_sampled = idx_enroll[torch.randperm(len(idx_enroll))[:N-1]] # For each trial speaker, N-1 enroll speaker are randomly selected
+            sampled_scores = column[idx_sampled]
+            final_score = 1 if column[spk_id] > max(sampled_scores) else 0 # Speaker has been successfully linked if his similarity with himself is the highest
+            sampled_scores = torch.cat((sampled_scores, column[spk_id].unsqueeze(0)))# We still add the score of the speaker against himself after de N-1 random draw
+            all_idx = torch.cat((idx_sampled, torch.tensor([spk_id])))
+            enroll_spk = [inversed_enroll_ids[idx.item()] for idx in all_idx]
+            scores_dictionary[inversed_trial_ids[spk_id]] = (final_score, enroll_spk)
+            with open(f"../experiment/matrix_L-{self.L}/scores_N-{N}_seed-{seed}.pkl", 'wb') as handle:
+                pickle.dump(scores_dictionary, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+
+
 
                       
-matrix = SimMatrix("../data/embs_avg_cv11-A_Vox2_libri-54_anon_B5.pkl", "../data/spk2embs_cv11-B_Vox2_libri-54_anon_B5.pkl",1, 42)
+matrix = SimMatrix("../data/embs_avg_cv11-A_Vox2_libri-54_anon_B5.pkl", "../data/spk2embs_cv11-B_Vox2_libri-54_anon_B5.pkl",30, 42)
 print(matrix.trial_matrix.shape)
 print(matrix.similarity_matrix.shape)
-print(matrix.similarity_matrix[:5, :5])
+matrix.get_scores(40, 42)
 
