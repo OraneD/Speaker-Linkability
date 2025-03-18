@@ -107,6 +107,6 @@ class SimMatrix():
             scores_dictionary[inversed_trial_ids[spk_id]] = (final_score, enroll_spk)
             with open(f"experiment/matrix_L-{self.L}/scores_N-{N}_seed-{seed}.pkl", 'wb') as handle:
                 pickle.dump(scores_dictionary, handle, protocol=pickle.HIGHEST_PROTOCOL)
-            self.logger.info(f"Done - file saved as /experiment/matrix_L-{self.L}/scores_N-{N}_seed-{seed}.pkl")
+        self.logger.info(f"Done - file saved as /experiment/matrix_L-{self.L}/scores_N-{N}_seed-{seed}.pkl")
 
 
