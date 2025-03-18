@@ -30,10 +30,9 @@ class SimMatrix():
     def __getitem__(self, index):
         if isinstance(index,int):
             return self.similarity_matrix[index][index]
-        elif isinstance(index,str):
+        if isinstance(index,str):
             return self.enroll_ids[index]
-        else:
-            raise TypeError("Invalid argument type, must be int or str")
+        raise TypeError("Invalid argument type, must be int or str")
     
 
     def __map_trial_ids(self):
@@ -70,10 +69,9 @@ class SimMatrix():
         if len(lst_tensor) >= self.L: # If there is more embeddings then needed for 1 speaker, we randomly select L embeddings
          selected_embeddings = random.sample(lst_tensor, self.L)
          return get_avg_tensor(selected_embeddings)
-        elif len(lst_tensor) == 1 :   # If there's only 1 embedding for the speaker, we return the one embbeding (it's the case for 1 speaker in whole dataset)
-            return lst_tensor[0]
-        else :                        # If there's not enough embedding for the speaker, we compute the average embedding with all embeddings from the speaker anyway
-         return get_avg_tensor(lst_tensor) 
+        if len(lst_tensor) == 1 :   # If there's only 1 embedding for the speaker, we return the one embbeding (it's the case for 1 speaker in whole dataset)
+            return lst_tensor[0]                      # If there's not enough embedding for the speaker, we compute the average embedding with all embeddings from the speaker anyway
+        return get_avg_tensor(lst_tensor) 
 
     def __compute_cosine_similarity(self):
         self.logger.info(f"Generating cosine similarity matrix of size ({len(self.trial_ids)},{len(self.enroll_ids)})")
