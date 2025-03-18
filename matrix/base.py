@@ -8,9 +8,7 @@ from tqdm import tqdm
 import os
 from utils import get_avg_tensor, setup_logger
 
-#TO DO : - Save utterances picked during averaging in set B
-#        - Implement Logger
-#        - Implement __get_item() func
+#TO DO : 
 #        - Add DocString
 
 class SimMatrix():
@@ -21,6 +19,8 @@ class SimMatrix():
         self.L = L
         self.seed = seed
         random.seed(seed)
+        self.logger = setup_logger("logs", f"SimMatrix_L-{self.L}")
+        self.logger.info(f"Generating Cosine Similarity matrix for L = {self.L} and seed = {self.seed} ")
         self.trial_ids = self.__map_trial_ids()
         self.enroll_ids = self.__map_enroll_ids()
         self.trial_matrix = self.__get_trial_matrix()
@@ -37,9 +37,11 @@ class SimMatrix():
     
 
     def __map_trial_ids(self):
+        self.logger.info("Mapping trial ids...")
         return {spk_id : idx for idx, spk_id in enumerate(list(self.trial_embeddings.keys()))}
     
     def __map_enroll_ids(self):
+        self.logger.info("Mapping enroll ids...")
         enroll_ids = {spk_id: idx for idx, spk_id in enumerate(self.trial_embeddings.keys())}
         next_id = len(self.trial_embeddings)
         for spk_id in self.enroll_embeddings.h.keys():
@@ -49,16 +51,18 @@ class SimMatrix():
         return enroll_ids
 
     def __get_enroll_matrix(self):
-            embeddings_list = [torch.tensor(self.enroll_embeddings.h[spk_id]) for spk_id in sorted(self.enroll_ids, key=self.enroll_ids.get)]
+            self.logger.info("Generating enroll matrix...")
+            embeddings_list = [self.enroll_embeddings.h[spk_id].clone().detach() for spk_id in sorted(self.enroll_ids, key=self.enroll_ids.get)]
             return torch.stack(embeddings_list) 
 
     def __get_trial_matrix(self):
+        self.logger.info("Generating trial matrix...")
         if self.L == 1 :
-            embeddings_list = [torch.tensor(random.sample(self.trial_embeddings[spk_id], 1)[0]) 
+            embeddings_list = [random.sample(self.trial_embeddings[spk_id], 1)[0].clone().detach() 
                                 for spk_id in  sorted(self.trial_ids, key=self.trial_ids.get)]
             return torch.stack(embeddings_list)
         elif self.L > 1 :
-            embeddings_list = [torch.tensor(self.compute_random_avg(self.trial_embeddings[spk_id])) 
+            embeddings_list = [self.compute_random_avg(self.trial_embeddings[spk_id]).clone().detach() 
                                 for spk_id in  sorted(self.trial_ids, key=self.trial_ids.get)]
             return torch.stack(embeddings_list)
 
@@ -72,15 +76,18 @@ class SimMatrix():
          return get_avg_tensor(lst_tensor) 
 
     def __compute_cosine_similarity(self):
+        self.logger.info(f"Generating cosine similarity matrix of size ({len(self.trial_ids)},{len(self.enroll_ids)})")
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         trial_matrix = F.normalize(self.trial_matrix).to(device)
         enroll_matrix = F.normalize(self.enroll_matrix).to(device)
         cosine_matrix = torch.mm(trial_matrix, enroll_matrix.T)
-        torch.save(cosine_matrix, f"../data/final_matrix/cosine_matrix_L-{self.L}_seed-{self.seed}.pt")
+        torch.save(cosine_matrix, f"data/final_matrix/cosine_matrix_L-{self.L}_seed-{self.seed}.pt")
+        self.logger.info(f"Done - file saved as /data/final_matrix/cosine_matrix_L-{self.L}_seed-{self.seed}.pt")
         return cosine_matrix
     
     def get_scores(self, N, seed):
-        os.makedirs(f"../experiment/matrix_L-{self.L}", exist_ok=True)
+        self.logger.info(f"Retrieving scores for {N} enroll speakers with seed {seed}")
+        os.makedirs(f"experiment/matrix_L-{self.L}", exist_ok=True)
         torch.manual_seed(seed)
         transposed_sim_matrix = self.similarity_matrix.T
         inversed_enroll_ids = {v: k for k, v in self.enroll_ids.items()}
@@ -98,16 +105,8 @@ class SimMatrix():
             all_idx = torch.cat((idx_sampled, torch.tensor([spk_id])))
             enroll_spk = [inversed_enroll_ids[idx.item()] for idx in all_idx]
             scores_dictionary[inversed_trial_ids[spk_id]] = (final_score, enroll_spk)
-            with open(f"../experiment/matrix_L-{self.L}/scores_N-{N}_seed-{seed}.pkl", 'wb') as handle:
+            with open(f"experiment/matrix_L-{self.L}/scores_N-{N}_seed-{seed}.pkl", 'wb') as handle:
                 pickle.dump(scores_dictionary, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            self.logger.info(f"Done - file saved as /experiment/matrix_L-{self.L}/scores_N-{N}_seed-{seed}.pkl")
 
-
-
-
-
-                      
-matrix = SimMatrix("../data/embs_avg_cv11-A_Vox2_libri-54_anon_B5.pkl", "../data/spk2embs_cv11-B_Vox2_libri-54_anon_B5.pkl",30, 42)
-print(matrix.trial_matrix.shape)
-print(matrix.similarity_matrix.shape)
-matrix.get_scores(40, 42)
 
