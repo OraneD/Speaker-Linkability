@@ -25,6 +25,7 @@ class SimMatrix():
         self.enroll_matrix = self.__get_enroll_matrix()
         self.similarity_matrix = self.__compute_cosine_similarity()
     
+    
 
     def __map_trial_ids(self):
         return {spk_id : idx for idx, spk_id in enumerate(list(self.trial_embeddings.keys()))}
@@ -65,10 +66,12 @@ class SimMatrix():
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         trial_matrix = F.normalize(self.trial_matrix).to(device)
         enroll_matrix = F.normalize(self.enroll_matrix).to(device)
-        return torch.mm(trial_matrix, enroll_matrix.T)
+        cosine_matrix = torch.mm(trial_matrix, enroll_matrix.T)
+        torch.save(cosine_matrix, f"../data/final_matrix/cosine_matrix_L-{self.L}_seed-{self.seed}.pt")
+        return cosine_matrix
 
                       
-matrix = SimMatrix("../data/embs_avg_cv11-A_Vox2_libri-54_anon_B5.pkl", "../data/spk2embs_cv11-B_Vox2_libri-54_anon_B5.pkl",10, 42)
+matrix = SimMatrix("../data/embs_avg_cv11-A_Vox2_libri-54_anon_B5.pkl", "../data/spk2embs_cv11-B_Vox2_libri-54_anon_B5.pkl",1, 42)
 print(matrix.trial_matrix.shape)
 print(matrix.similarity_matrix.shape)
 print(matrix.similarity_matrix[:5, :5])
