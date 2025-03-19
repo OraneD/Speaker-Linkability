@@ -4,23 +4,44 @@ import argparse
 torchvision.disable_beta_transforms_warning()
 
 
+
 N_ENROLL_SPK = 20024
+SEEDS = [42, 0,  6, 7, 25]
+ENROLL_PATH = "data/embs_avg_cv11-A_Vox2_libri-54_anon_B5.pkl"
+TRIAL_PATH = "data/spk2embs_cv11-B_Vox2_libri-54_anon_B5.pkl"
 
-SEED_1 = 42
-SEED_2 = 0
-SEED_3 = 6
-SEED_4 = 7
-SEED_5 = 25
+def get_parser():
+    parser = argparse.ArgumentParser()
 
+    parser.add_argument("--L",
+                       type=int,
+                       help="Number of trial utterances")
+    
+    parser.add_argument("--matrix_path",
+                         default=None,
+                         type=str,
+                         help="path to the matrix to process if already existing")
+    
+    parser.add_argument("--N",
+                        default=20,
+                        type=int,
+                        help="First number of enroll speaker selected")
+    
+    parser.add_argument("--seed",
+                        default=42,
+                        type=int)
+    return parser
+    
 def main():
-    matrix_1 = SimMatrix("data/embs_avg_cv11-A_Vox2_libri-54_anon_B5.pkl", "data/spk2embs_cv11-B_Vox2_libri-54_anon_B5.pkl",1, 42)
-    matrix_3 = SimMatrix("data/embs_avg_cv11-A_Vox2_libri-54_anon_B5.pkl", "data/spk2embs_cv11-B_Vox2_libri-54_anon_B5.pkl",3, 42)
-    matrix_30 = SimMatrix("data/embs_avg_cv11-A_Vox2_libri-54_anon_B5.pkl", "data/spk2embs_cv11-B_Vox2_libri-54_anon_B5.pkl",30, 42)
-    matrices = [matrix_1, matrix_3, matrix_30]
-    for matrix in matrices :
-        for seed in [SEED_1, SEED_2, SEED_3, SEED_4, SEED_5] :
-            for N in list(range(20, N_ENROLL_SPK, 100)) + [N_ENROLL_SPK]:
-                matrix.get_scores(N, seed)
+    parser = get_parser()
+    args = parser.parse_args()
+    if args.matrix_path != None :
+     matrix = SimMatrix(ENROLL_PATH, TRIAL_PATH, args.L, 42, args.matrix_path)
+    else :
+     matrix = SimMatrix(ENROLL_PATH, TRIAL_PATH, args.L, 42)
+
+    for N in list(range(args.N,N_ENROLL_SPK , 100)) + [N_ENROLL_SPK] :
+        matrix.get_scores_parallel(N,args.seed)
 
 main()
 
