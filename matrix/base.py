@@ -28,6 +28,8 @@ class SimMatrix():
         self.trial_matrix = self.__get_trial_matrix()
         self.enroll_matrix = self.__get_enroll_matrix()
         self.similarity_matrix = self.__compute_cosine_similarity() if matrix_path == None else torch.load(matrix_path)
+        if matrix_path != None :
+            self.logger.info(f"Cosine Similarity matrix loaded from file {matrix_path}")
 
     def __getitem__(self, index):
         if isinstance(index,int):
