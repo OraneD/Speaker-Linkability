@@ -21,13 +21,15 @@ class SimMatrix():
         self.seed = seed
         random.seed(seed)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.cpus = os.cpu_count()
         self.logger = setup_logger("logs", f"SimMatrix_L-{self.L}")
         self.logger.info(f"Generating Cosine Similarity matrix for L = {self.L} and seed = {self.seed} ")
+        self.logger.info(f"Device selected : {self.device}, CPUs available : {self.cpus}")
         self.trial_ids = self.__map_trial_ids()
         self.enroll_ids = self.__map_enroll_ids()
         self.trial_matrix = self.__get_trial_matrix()
         self.enroll_matrix = self.__get_enroll_matrix()
-        self.similarity_matrix = self.__compute_cosine_similarity() if matrix_path == None else torch.load(matrix_path)
+        self.similarity_matrix = self.__compute_cosine_similarity() if matrix_path == None else torch.load(matrix_path, map_location=torch.device(self.device))
         if matrix_path != None :
             self.logger.info(f"Cosine Similarity matrix loaded from file {matrix_path}")
 
@@ -120,7 +122,7 @@ class SimMatrix():
             for spk_id in self.trial_ids.values()
         ]
 
-        with ProcessPoolExecutor(max_workers=40) as executor: 
+        with ProcessPoolExecutor(max_workers=self.cpus-5) as executor: 
             results = list(tqdm(executor.map(self.compute_score, args_list), total=len(args_list), desc="Computing scores..."))
 
         scores_dictionary = dict(results)
