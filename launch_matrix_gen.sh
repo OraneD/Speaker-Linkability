@@ -1,22 +1,19 @@
 #!/bin/bash
 #SBATCH --job-name=MatrixGen         
 #SBATCH --partition=prepost                
-#SBATCH --time=20:00:00                   
+#SBATCH --time=10:00:00                   
 #SBATCH --output=MatrixGen_%j.out        
 #SBATCH --error=MatrixGen_%j.err
 
 
 L=$1
 MATRIX_PATH=$2
-N=$3
-SEED=$4
 
 source ~/.bashrc
 conda activate kiwano_env
-python generate_matrices.py --L $L --matrix_path $MATRIX_PATH  --seed $SEED
-
-#sbatch launch_matrix_gen.sh 1 data/final_matrix/cosine_matrix_L-1_seed-42.pt  42
-#sbatch launch_matrix_gen.sh 3 data/final_matrix/cosine_matrix_L-3_seed-42.pt  42
-#sbatch launch_matrix_gen.sh 30 data/final_matrix/cosine_matrix_L-30_seed-42.pt 42
+python generate_matrices.py --L $L --matrix_path $MATRIX_PATH 
+#sbatch launch_matrix_gen.sh 1 data/final_matrix/cosine_matrix_L-1_seed-42.pt
+#sbatch launch_matrix_gen.sh 3 data/final_matrix/cosine_matrix_L-3_seed-42.pt
+#sbatch launch_matrix_gen.sh 30 data/final_matrix/cosine_matrix_L-30_seed-42.pt
 
 

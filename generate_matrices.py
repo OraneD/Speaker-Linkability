@@ -11,7 +11,6 @@ ENROLL_PATH = "data/embs_avg_cv11-A_Vox2_libri-54_anon_B5.pkl"
 TRIAL_PATH = "data/spk2embs_cv11-B_Vox2_libri-54_anon_B5.pkl"
 
 N_enrolls = [n := N_ENROLL_SPK // (2 ** i) for i in range(0, 15) if N_ENROLL_SPK // (2 ** i) >= 20]
-N_enrolls.insert(N_ENROLL_SPK,0)
 
 def get_parser():
     parser = argparse.ArgumentParser()
@@ -24,15 +23,6 @@ def get_parser():
                          default=None,
                          type=str,
                          help="path to the matrix to process if already existing")
-    
-    parser.add_argument("--N",
-                        default=20,
-                        type=int,
-                        help="First number of enroll speaker selected")
-    
-    parser.add_argument("--seed",
-                        default=42,
-                        type=int)
     return parser
     
 def main():
@@ -43,8 +33,9 @@ def main():
     else :
      matrix = SimMatrix(ENROLL_PATH, TRIAL_PATH, args.L, 42)
 
-    for N in N_enrolls :
-        matrix.get_scores_sequential(N,args.seed)
+    for seed in SEEDS : 
+        for N in N_enrolls :
+             matrix.get_scores_sequential(N,seed)
 
 main()
 
