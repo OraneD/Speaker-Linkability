@@ -5,10 +5,13 @@ torchvision.disable_beta_transforms_warning()
 
 
 
-N_ENROLL_SPK = 20024
+N_ENROLL_SPK = 22024
 SEEDS = [42, 0,  6, 7, 25]
 ENROLL_PATH = "data/embs_avg_cv11-A_Vox2_libri-54_anon_B5.pkl"
 TRIAL_PATH = "data/spk2embs_cv11-B_Vox2_libri-54_anon_B5.pkl"
+
+N_enrolls = [n := N_ENROLL_SPK // (2 ** i) for i in range(0, 15) if N_ENROLL_SPK // (2 ** i) >= 20]
+N_enrolls.insert(N_ENROLL_SPK,0)
 
 def get_parser():
     parser = argparse.ArgumentParser()
@@ -40,8 +43,8 @@ def main():
     else :
      matrix = SimMatrix(ENROLL_PATH, TRIAL_PATH, args.L, 42)
 
-    for N in list(range(args.N,N_ENROLL_SPK , 100)) + [N_ENROLL_SPK] :
-        matrix.get_scores_parallel(N,args.seed)
+    for N in N_enrolls :
+        matrix.get_scores_sequential(N,args.seed)
 
 main()
 

@@ -92,7 +92,7 @@ class SimMatrix():
     def compute_score(args):
         spk_id, transposed_sim_matrix, inversed_enroll_ids, inversed_trial_ids, N = args
 
-        column = transposed_sim_matrix[spk_id] 
+        column = transposed_sim_matrix[spk_id]  # We get the column for the corresponding speaker (every score of the current speaker vs all the enrolls)
         idx_column = torch.arange(len(column), device=column.device)
         mask = idx_column != spk_id # We remove the score of the speaker vs himself so that it won't be randomly chosen
         idx_enroll = idx_column[mask]
@@ -113,7 +113,7 @@ class SimMatrix():
         torch.manual_seed(seed)
         device = "cpu"
 
-        transposed_sim_matrix = self.similarity_matrix.T.to(device) # We get the column for the corresponding speaker (every score of the current speaker vs all the enrolls)
+        transposed_sim_matrix = self.similarity_matrix.T.to(device)
         inversed_enroll_ids = {v: k for k, v in self.enroll_ids.items()}
         inversed_trial_ids = {v: k for k, v in self.trial_ids.items()}
 
@@ -122,7 +122,7 @@ class SimMatrix():
             for spk_id in self.trial_ids.values()
         ]
 
-        with ProcessPoolExecutor(max_workers=self.cpus-5) as executor: 
+        with ProcessPoolExecutor(max_workers=40) as executor: 
             results = list(tqdm(executor.map(self.compute_score, args_list), total=len(args_list), desc="Computing scores..."))
 
         scores_dictionary = dict(results)
@@ -132,5 +132,41 @@ class SimMatrix():
             pickle.dump(scores_dictionary, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         self.logger.info(f"Done - file saved as {output_path}")
+
+    def get_scores_sequential(self, N, seed):
+        self.logger.info(f"Retrieving scores for {N} enroll speakers with seed {seed}")
+        os.makedirs(f"experiment/matrix_L-{self.L}", exist_ok=True)
+        torch.manual_seed(seed)
+        device = "cpu"
+
+        scores = {}
+
+        transposed_sim_matrix = self.similarity_matrix.T.to(device)
+        inversed_enroll_ids = {v: k for k, v in self.enroll_ids.items()}
+        inversed_trial_ids = {v: k for k, v in self.trial_ids.items()}
+
+        for spk_id in tqdm(list(self.trial_ids.values()), total=len(self.trial_ids.values()), desc="Computing scores..."):
+            column = transposed_sim_matrix[spk_id]  # We get the column for the corresponding speaker (every score of the current speaker vs all the enrolls)
+            idx_column = torch.arange(len(column), device=column.device)
+            mask = idx_column != spk_id # We remove the score of the speaker vs himself so that it won't be randomly chosen
+            idx_enroll = idx_column[mask]
+            
+            idx_sampled = idx_enroll[torch.randperm(len(idx_enroll))[:N-1]] # For each trial speaker, N-1 enroll speaker are randomly selected
+            sampled_scores = column[idx_sampled]
+            
+            final_score = 1 if column[spk_id] > max(sampled_scores) else 0  # Speaker has been successfully linked if his similarity with himself is the highest
+            sampled_scores = torch.cat((sampled_scores, column[spk_id].unsqueeze(0)))# We still add the score of the speaker against himself after de N-1 random draw
+            all_idx = torch.cat((idx_sampled, torch.tensor([spk_id], device=column.device)))
+            
+            enroll_spk = [inversed_enroll_ids[idx.item()] for idx in all_idx]
+            scores[inversed_trial_ids[spk_id]] =  (final_score, enroll_spk)
+
+        output_path = f"experiment/matrix_L-{self.L}/scores_N-{N}_seed-{seed}.pkl"
+        with open(output_path, 'wb') as handle:
+            pickle.dump(scores, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        self.logger.info(f"Done - file saved as {output_path}")
+
+
 
 
