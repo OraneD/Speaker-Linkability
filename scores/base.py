@@ -7,7 +7,7 @@ from utils import setup_logger
 """
 Takes a directory containing dictionaries matrix scores and computes :
         - The overall linkability across all seeds and N enrollment speaker for the given matrix
-        - The overall linkability across all seends and N enrollment speaker for all trial speakers of the given matrix
+        - The overall linkability across all seeds and N enrollment speaker for all trial speakers of the given matrix
 """
 
 class Scores():
