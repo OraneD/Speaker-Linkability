@@ -35,6 +35,7 @@ It takes as arguments :
 - `L` :  which is the number of utterances used to compute the embedding of each test speaker
 - `seed` : to initialize the random number generator involved in the choice of the utterances chosen to compute the average embeddings
 - `matrix_path` : if the SimMatrix has already been computed and saved
+It then computes and saves the matrix if not already done.
 
 #### Scores
 TO DO
