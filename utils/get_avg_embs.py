@@ -10,9 +10,9 @@ Saves a pickle dictionary with spk_id as key and averaged tensor of speaker (ove
                     averaged_embs[spk_id] = averaged_tensor
 
 """
-KALDI_LST_PATH = "/lustre/fsn1/projects/rech/yjs/umf82pt/CommonVoice/cv11-A_anon_B5/liste" # Usefull just for set A anyway
-EMBEDDINGS_PATH = "/lustre/fsn1/projects/rech/yjs/umf82pt/CommonVoice/embs/anon_B5/embs_cv11-A_Vox2_libri-54_anon_B5.pkl"
-OUTPUT_PATH = "../data/embs_avg_cv11-A_Vox2_libri-54_anon_B5.pkl"
+KALDI_LST_PATH = "/lustre/fsn1/projects/rech/yjs/umf82pt/CommonVoice/cv11-A/liste" # Usefull just for set A anyway
+EMBEDDINGS_PATH = "/lustre/fsn1/projects/rech/yjs/umf82pt/CommonVoice/embs/orig/embs_cv11-A_Vox2_libri-54.pkl"
+OUTPUT_PATH = "../data/embs_avg_cv11-A_Vox2_libri-54.pkl"
 
 def get_avg_tensor(lst_tensor):
     return torch.stack(lst_tensor).mean(dim=0)
