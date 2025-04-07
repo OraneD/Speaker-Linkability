@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --job-name=MatrixGen         
 #SBATCH --partition=prepost                
-#SBATCH --time=10:00:00                   
+#SBATCH --time=04:00:00                   
 #SBATCH --output=MatrixGen_%j.out        
 #SBATCH --error=MatrixGen_%j.err
 
 
 L=$1
-MATRIX_PATH=$2
+MATRIX_PATH=${2:-None}
 
 source ~/.bashrc
 conda activate kiwano_env
