@@ -6,7 +6,7 @@ import random
 from tqdm import tqdm
 import os
 from concurrent.futures import ProcessPoolExecutor
-from embedding import read_pkl
+from embedding import read_pkl, EmbeddingSet
 from utils import get_avg_tensor, setup_logger
 
 #TO DO : 
@@ -14,7 +14,9 @@ from utils import get_avg_tensor, setup_logger
 
 class SimMatrix():
     def __init__(self, enroll_path, trial_path,L,seed, matrix_path=None):
-        self.enroll_embeddings = read_pkl(f"pkl:{enroll_path}")
+        #self.enroll_embeddings = read_pkl(f"pkl:{enroll_path}")
+        with open(enroll_path, "rb") as handle :
+            self.enroll_embeddings = pickle.load(handle)
         with open(trial_path, "rb") as handle :
             self.trial_embeddings = pickle.load(handle)
         self.L = L
@@ -49,7 +51,7 @@ class SimMatrix():
         self.logger.info("Mapping enroll ids...")
         enroll_ids = {spk_id: idx for idx, spk_id in enumerate(self.trial_embeddings.keys())}
         next_id = len(self.trial_embeddings)
-        for spk_id in self.enroll_embeddings.h.keys():
+        for spk_id in self.enroll_embeddings.keys():
             if spk_id not in self.trial_embeddings:
                 enroll_ids[spk_id] = next_id
                 next_id += 1
@@ -57,7 +59,7 @@ class SimMatrix():
 
     def __get_enroll_matrix(self):
             self.logger.info("Generating enroll matrix...")
-            embeddings_list = [self.enroll_embeddings.h[spk_id].clone().detach() for spk_id in sorted(self.enroll_ids, key=self.enroll_ids.get)]
+            embeddings_list = [self.enroll_embeddings[spk_id].clone().detach() for spk_id in sorted(self.enroll_ids, key=self.enroll_ids.get)]
             return torch.stack(embeddings_list) 
 
     def __get_trial_matrix(self):
@@ -84,8 +86,8 @@ class SimMatrix():
         trial_matrix = F.normalize(self.trial_matrix).to(self.device)
         enroll_matrix = F.normalize(self.enroll_matrix).to(self.device)
         cosine_matrix = torch.mm(trial_matrix, enroll_matrix.T)
-        torch.save(cosine_matrix, f"data/final_matrix/cosine_matrix_L-{self.L}_seed-{self.seed}.pt")
-        self.logger.info(f"Done - file saved as /data/final_matrix/cosine_matrix_L-{self.L}_seed-{self.seed}.pt")
+        torch.save(cosine_matrix, f"data/final_matrix/ECAPA_cosine_matrix_L-{self.L}_seed-{self.seed}_orig.pt")
+        self.logger.info(f"Done - file saved as /data/final_matrix/ECAPA_cosine_matrix_L-{self.L}_seed-{self.seed}_orig.pt")
         return cosine_matrix
     
     @staticmethod
@@ -109,7 +111,7 @@ class SimMatrix():
 
     def get_scores_parallel(self, N, seed):
         self.logger.info(f"Retrieving scores for {N} enroll speakers with seed {seed}")
-        os.makedirs(f"experiment/matrix_L-{self.L}", exist_ok=True)
+        os.makedirs(f"experiment/ECAPA/matrix_L-{self.L}_orig", exist_ok=True)
         torch.manual_seed(seed)
         device = "cpu"
 
@@ -127,7 +129,7 @@ class SimMatrix():
 
         scores_dictionary = dict(results)
 
-        output_path = f"experiment/matrix_L-{self.L}/scores_N-{N}_seed-{seed}.pkl"
+        output_path = f"experiment/ECAPA/matrix_L-{self.L}_orig/scores_N-{N}_seed-{seed}.pkl"
         with open(output_path, 'wb') as handle:
             pickle.dump(scores_dictionary, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -135,7 +137,7 @@ class SimMatrix():
 
     def get_scores_sequential(self, N, seed):
         self.logger.info(f"Retrieving scores for {N} enroll speakers with seed {seed}")
-        os.makedirs(f"experiment/matrix_L-{self.L}", exist_ok=True)
+        os.makedirs(f"experiment/ECAPA/matrix_L-{self.L}_orig", exist_ok=True)
         torch.manual_seed(seed)
         device = "cpu"
 
@@ -161,7 +163,7 @@ class SimMatrix():
             enroll_spk = [inversed_enroll_ids[idx.item()] for idx in all_idx]
             scores[inversed_trial_ids[spk_id]] =  (final_score, enroll_spk)
 
-        output_path = f"experiment/matrix_L-{self.L}/scores_N-{N}_seed-{seed}.pkl"
+        output_path = f"experiment/ECAPA/matrix_L-{self.L}_orig/scores_N-{N}_seed-{seed}.pkl"
         with open(output_path, 'wb') as handle:
             pickle.dump(scores, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
