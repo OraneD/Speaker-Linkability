@@ -13,7 +13,7 @@ from utils import get_avg_tensor, setup_logger
 #        - Add DocString
 
 class SimMatrix():
-    def __init__(self, enroll_path, trial_path,L,seed, matrix_path=None):
+    def __init__(self, enroll_path, trial_path,L,seed, model_type, data_type, matrix_path=None):
         #self.enroll_embeddings = read_pkl(f"pkl:{enroll_path}")
         with open(enroll_path, "rb") as handle :
             self.enroll_embeddings = pickle.load(handle)
@@ -22,6 +22,8 @@ class SimMatrix():
         self.L = L
         self.seed = seed
         random.seed(seed)
+        self.model_type = model_type
+        self.data_type = data_type
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.cpus = os.cpu_count()
         self.logger = setup_logger("logs", f"SimMatrix_L-{self.L}")
@@ -86,8 +88,8 @@ class SimMatrix():
         trial_matrix = F.normalize(self.trial_matrix).to(self.device)
         enroll_matrix = F.normalize(self.enroll_matrix).to(self.device)
         cosine_matrix = torch.mm(trial_matrix, enroll_matrix.T)
-        torch.save(cosine_matrix, f"data/final_matrix/ECAPA_cosine_matrix_L-{self.L}_seed-{self.seed}_orig.pt")
-        self.logger.info(f"Done - file saved as /data/final_matrix/ECAPA_cosine_matrix_L-{self.L}_seed-{self.seed}_orig.pt")
+        torch.save(cosine_matrix, f"data/final_matrix/{self.model_type}_cosine_matrix_L-{self.L}_seed-{self.seed}_{self.data_type}.pt")
+        self.logger.info(f"Done - file saved as /data/final_matrix/{self.model_type}_cosine_matrix_L-{self.L}_seed-{self.seed}_{self.data_type}.pt")
         return cosine_matrix
     
     @staticmethod
@@ -110,8 +112,11 @@ class SimMatrix():
         return inversed_trial_ids[spk_id], (final_score, enroll_spk)
 
     def get_scores_parallel(self, N, seed):
+        """
+        NOT WORKING YET
+        """
         self.logger.info(f"Retrieving scores for {N} enroll speakers with seed {seed}")
-        os.makedirs(f"experiment/ECAPA/matrix_L-{self.L}_orig", exist_ok=True)
+        os.makedirs(f"experiment/{self.model_type}/matrix_L-{self.L}_{self.data_type}", exist_ok=True)
         torch.manual_seed(seed)
         device = "cpu"
 
@@ -129,7 +134,7 @@ class SimMatrix():
 
         scores_dictionary = dict(results)
 
-        output_path = f"experiment/ECAPA/matrix_L-{self.L}_orig/scores_N-{N}_seed-{seed}.pkl"
+        output_path = f"experiment/{self.model_type}/matrix_L-{self.L}_{self.data_type}/scores_N-{N}_seed-{seed}.pkl"
         with open(output_path, 'wb') as handle:
             pickle.dump(scores_dictionary, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -137,7 +142,7 @@ class SimMatrix():
 
     def get_scores_sequential(self, N, seed):
         self.logger.info(f"Retrieving scores for {N} enroll speakers with seed {seed}")
-        os.makedirs(f"experiment/ECAPA/matrix_L-{self.L}_orig", exist_ok=True)
+        os.makedirs(f"experiment/{self.model_type}/matrix_L-{self.L}_{self.data_type}", exist_ok=True)
         torch.manual_seed(seed)
         device = "cpu"
 
@@ -163,7 +168,7 @@ class SimMatrix():
             enroll_spk = [inversed_enroll_ids[idx.item()] for idx in all_idx]
             scores[inversed_trial_ids[spk_id]] =  (final_score, enroll_spk)
 
-        output_path = f"experiment/ECAPA/matrix_L-{self.L}_orig/scores_N-{N}_seed-{seed}.pkl"
+        output_path = f"experiment/{self.model_type}/matrix_L-{self.L}_{self.data_type}/scores_N-{N}_seed-{seed}.pkl"
         with open(output_path, 'wb') as handle:
             pickle.dump(scores, handle, protocol=pickle.HIGHEST_PROTOCOL)
 

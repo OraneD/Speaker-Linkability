@@ -1,19 +1,16 @@
 from matrix import SimMatrix
 import torchvision
 import argparse
+import yaml
 torchvision.disable_beta_transforms_warning()
 
 
-
-N_ENROLL_SPK = 22024
-SEEDS = [42, 0,  6, 7, 25]
-ENROLL_PATH = "data/embs_avg_cv11-A_ECAPA.pkl"
-TRIAL_PATH = "data/spk2embs_cv11-B_ECAPA.pkl"
-
-N_enrolls = [n := N_ENROLL_SPK // (2 ** i) for i in range(0, 15) if N_ENROLL_SPK // (2 ** i) >= 20]
-
 def get_parser():
     parser = argparse.ArgumentParser()
+
+    parser.add_argument("--config",
+                        type=str,
+                        help="config file path")
 
     parser.add_argument("--L",
                        type=int,
@@ -28,12 +25,30 @@ def get_parser():
 def main():
     parser = get_parser()
     args = parser.parse_args()
-    if args.matrix_path != "None" :
-     matrix = SimMatrix(ENROLL_PATH, TRIAL_PATH, args.L, 42, args.matrix_path)
-    else :
-     matrix = SimMatrix(ENROLL_PATH, TRIAL_PATH, args.L, 42)
 
-    for seed in SEEDS : 
+    with open(args.config, 'r') as file :
+        config = yaml.safe_load(file)
+
+    N_ENROLL_SPK = config['matrix']['n_enroll_spk']
+    N_enrolls = [n := N_ENROLL_SPK // (2 ** i) for i in range(0, 15) if N_ENROLL_SPK // (2 ** i) >= 20]
+
+    if args.matrix_path != "None" :
+          matrix = SimMatrix(config['matrix']['enroll_path'], 
+                        config['matrix']['trial_path'], 
+                        args.L, 
+                        42, 
+                        config['matrix']['model_type'], 
+                        config['matrix']['data_type'],
+                        args.matrix_path)
+    else :
+     matrix = SimMatrix(config['matrix']['enroll_path'], 
+                        config['matrix']['trial_path'], 
+                        args.L, 
+                        42, 
+                        config['matrix']['model_type'], 
+                        config['matrix']['data_type'])
+
+    for seed in config['matrix']['seeds'] : 
         for N in N_enrolls :
              matrix.get_scores_sequential(N,seed)
 
