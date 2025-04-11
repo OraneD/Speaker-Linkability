@@ -26,9 +26,9 @@ def get_spk2embs(embeddings,utt2spk):
         spk_id = utt2spk[utt_id]
         if spk_id not in spk2embs:
             spk2embs[spk_id] = []
-            spk2embs[spk_id].append(embs)
+            spk2embs[spk_id].append((utt_id,embs))
         else : 
-            spk2embs[spk_id].append(embs)
+            spk2embs[spk_id].append((utt_id,embs))
     return spk2embs
 
 def get_averaged_embeddings(spk2embs):

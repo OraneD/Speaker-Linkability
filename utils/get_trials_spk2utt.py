@@ -7,7 +7,7 @@ Saves a dictionary with spk_id : List(embeddings) from set B
 """
 KALDI_LST_PATH = "/lustre/fsn1/projects/rech/yjs/umf82pt/CommonVoice/cv11-B/liste" # Usefull just for set B anyway
 EMBEDDINGS_PATH = "/lustre/fsn1/projects/rech/yjs/umf82pt/CommonVoice/embs/orig/embs_cv11-B_Vox2_libri-54.pkl"
-OUTPUT_PATH = "../data/spk2embs_cv11-B_Vox2_libri-54.pkl"
+OUTPUT_PATH = "../data/spk2embs_with_id_cv11-B_Vox2_libri-54.pkl"
 
 liste = [x.strip() for x in open(KALDI_LST_PATH).readlines()]
 utt2spk = get_utt2spk(liste)
