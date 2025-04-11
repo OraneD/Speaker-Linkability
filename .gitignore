@@ -5,3 +5,4 @@ experiment/
 logs/
 *.out
 *.err
+img/
