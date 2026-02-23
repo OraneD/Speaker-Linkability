@@ -11,9 +11,10 @@ Takes a directory containing dictionaries matrix scores and computes :
 """
 
 class Scores():
-    def __init__(self, dirpath, model):
+    def __init__(self, dirpath, model, score_path):
         self.dirpath = dirpath
         self.model = model
+        self.score_path = score_path
         self.seeds = [42, 0,  6, 7, 25]
         self.logger = setup_logger("logs", f"Scores-{'_'.join(self.dirpath).split('/')}")
         self.logger.info(f"Computing Linkability for Matrix {self.dirpath}")
@@ -31,6 +32,8 @@ class Scores():
                 with open(file, "rb") as handle :
                      score_dictionary = pickle.load(handle)
                      all_results[N] = self.compute_avg_score(score_dictionary)
+        with open(f"experiment/scores/{self.score_path}/all_scores_{self.dirpath.split('/')[-1]}_{self.model}.pkl", "wb") as handle :
+            pickle.dump(all_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
         return all_results
     
     def __get_speaker_scores(self):
@@ -47,7 +50,7 @@ class Scores():
                     speaker_scores[speaker].append(value[0])
         self.logger.info(f"Speaker score computed for {len(speaker_scores)} speakers")
         avg_speaker_scores ={speaker:sum(value)/len(value) for speaker, value in speaker_scores.items()}
-        with open(f"experiment/scores/speaker_scores_{self.dirpath.split('/')[-1]}_{self.model}.pkl", "wb") as handle :
+        with open(f"experiment/scores/{self.score_path}/speaker_scores_{self.dirpath.split('/')[-1]}_{self.model}.pkl", "wb") as handle :
             pickle.dump(avg_speaker_scores, handle, protocol=pickle.HIGHEST_PROTOCOL)
         return avg_speaker_scores
 
