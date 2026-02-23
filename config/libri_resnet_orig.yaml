@@ -1,0 +1,7 @@
+matrix:
+  n_enroll_spk: 22024
+  seeds: [42, 0,  6, 7, 25]
+  enroll_path: "data/embs_libri_resnet_orig/embs_avg_cv11-A_VAD_resnet_libri-54_orig.pkl"
+  trial_path: "data/embs_libri_resnet_orig/spk2embs_cv11-B_VAD_resnet_libri-54_orig.pkl"
+  model_type: "libri_resnet_orig"
+  data_type: "VAD_orig"

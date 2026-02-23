@@ -1,0 +1,7 @@
+matrix:
+  n_enroll_spk: 22024
+  seeds: [42, 0,  6, 7, 25]
+  enroll_path: "data/embs_libri_ECAPA_B5/embs_avg_cv11-A_ECAPA_921_anon_B5.pkl"
+  trial_path: "data/embs_libri_ECAPA_B5/spk2embs_cv11-B_ECAPA_921_anon_B5_ids.pkl"
+  model_type: "libri_ECAPA_B5"
+  data_type: "VAD_anon_B5"
