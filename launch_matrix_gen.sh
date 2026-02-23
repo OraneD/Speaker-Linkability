@@ -1,9 +1,16 @@
 #!/bin/bash
 #SBATCH --job-name=MatrixGen         
-#SBATCH --partition=prepost                
-#SBATCH --time=04:00:00                   
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=40
+#SBATCH --qos=qos_gpu-t3
+#SBATCH -A yjs@v100
+#SBATCH --time=05:00:00           
+#SBATCH -C v100-32g      
 #SBATCH --output=MatrixGen_%j.out        
 #SBATCH --error=MatrixGen_%j.err
+
+
+
 
 config=$1
 L=$2
