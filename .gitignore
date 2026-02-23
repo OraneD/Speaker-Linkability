@@ -6,3 +6,8 @@ logs/
 *.out
 *.err
 img/
+score_analysis/
+single_out/
+compute_singlingout.py
+scores/*_results*
+experiment_2/
