@@ -1,6 +1,3 @@
-"""
-Taken from https://github.com/mrouvier/kiwano
-"""
 
 import torch
 import pickle
