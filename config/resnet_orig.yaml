@@ -1,7 +1,0 @@
-matrix:
-  n_enroll_spk: 22024
-  seeds: [42, 0,  6, 7, 25]
-  enroll_path: "data/embs_avg_cv11-A_Vox2_libri-54.pkl"
-  trial_path: "data/spk2embs_cv11-B_Vox2_libri-54.pkl"
-  model_type: "resnet"
-  data_type: "orig"

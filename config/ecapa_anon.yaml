@@ -1,7 +1,0 @@
-matrix:
-  n_enroll_spk: 22024
-  seeds: [42, 0,  6, 7, 25]
-  enroll_path: "data/embs_avg_cv11-A_Vox2_ECAPA_anon_B5.pkl"
-  trial_path: "data/spk2embs_cv11-B_ECAPA_anon_B5.pkl"
-  model_type: "ECAPA"
-  data_type: "anon_B5"
