@@ -22,6 +22,11 @@ Note that this step can take a lot of time depending on your ressources : the tr
 Note that multi-node computation is not implemented for either anonymizer and that you would have to implement it yourself or launch several jobs in parallel to reduce computation time. 
 
 ## Attackers 
+This section provides the links to the implementations of the ASV systems we used in the paper. Each attacker has been trained on the LibriSpeech-train-clean-360 set, and no modification was made on the config files provided by the repository : 
+
+* **ECAPA** : VoicePrivacyChallenge2025 baseline, implementation can be found in the VPC's repo : https://github.com/Voice-Privacy-Challenge/Voice-Privacy-Challenge-2024/tree/main/evaluation/privacy/asv . Training took ~10 hours on a 4 32 Go GPU node 
+* **WavLM_ECAPA** : Comes from the sidekit toolkit : https://github.com/Voice-Privacy-Challenge/Voice-Privacy-Challenge-2024/tree/main/evaluation/privacy/asv . Training took ~48 hours on a 4 32Go GPU node
+* **ResNet** : repo cannot be linked yet because it would compromise the anonymity of one of the authors
 
 ## Metric Description 
 The Linkability metric has been created to evaluate the second criteria defining anonymized data : *data can be considered anonymous if it is not possible to link records that pertain to the same data subject*
