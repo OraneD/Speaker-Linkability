@@ -1,6 +1,27 @@
 This repository is an implementation of the Linkability metric for voice anonymization evaluation depicted in (article)[lien] and the reproduction of the experiment they led on the CommonVoice Dataset.
 
 ---
+## Data
+### Test (CommonVoice)
+You can download the 11th version of CommonVoice english here : https://datacollective.mozillafoundation.org/organization/cmfh0j9o10006ns07jq45h7xk
+
+Lists of the utterances and speaker ID for the A (enrollment) et B (trial) is available in the repo : [cv11-A](list-cv11-A) [TO DO](list-cv11-B)
+
+### Train LibriSpeech-train-clean-360
+The training set for the attackers is available here : https://www.openslr.org/12 
+
+## Anonymization 
+Training and test data should be anonymized with the same anonymizers and same parameters. The anonymizers used in this experiment are Baseline 3 and Baseline 5 of the VoicePrivacyChallenge 2025. 
+
+We used the implementation of the authors of those anonymizers instead of the VoicePrivacyChallenge's implementation which is less practical, they are available here : [B3](https://github.com/DigitalPhonetics/speaker-anonymization) [B5](https://github.com/deep-privacy/SA-toolkit).
+
+Note that this step can take a lot of time depending on your ressources : the train set is not such a challenge to anonymize due to its rather small size but anonymizing the CommonVoice dataset in a reasonable amount of time requires a lot of ressources, especially for B3. As an indication : 
+* Anonymizing CommonVoice with B3 took around 20 hours with 70 nodes of 4 32Go GPUs
+* Anonymizing CommonVoice with B5 took ~48 hours with 1 node of 4 32Go GPUs
+
+Note that multi-node computation is not implemented for either anonymizer and that you would have to implement it yourself or launch several jobs in parallel to reduce computation time. 
+
+## Attackers 
 
 ## Metric Description 
 The Linkability metric has been created to evaluate the second criteria defining anonymized data : *data can be considered anonymous if it is not possible to link records that pertain to the same data subject*
