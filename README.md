@@ -48,11 +48,13 @@ $$
 A low $\pi_{\text{link}}$ indicates that it is difficult for an attacker to correctly  
 link anonymized recordings to the correct speaker, thus supporting the claim of effective anonymization.
 
-## Installation
+## Usage
+This section presents how the repo works. Note that you have to complete all of the above steps in order to start using it : speaker embeddings (on anonymized or original speech) have to be extracted for enrollment and trial separatly, in the form of a .pkl dictionary with {utterance : embedding}. The config files and plot generations work for the experiment depicted in the paper, if you want to change de test set, modification should be done accordingly. 
+### Installation
 TO DO
 
-## Usage
-The metric computation revolves around two classes `SimMatrix` & `Scores`
+### Computing Linkability
+The metric computation revolves around the `SimMatrix` & a few scripts to get per-speakers score and plot results.
 
 #### SimMatrix
 The `SimMatrix` class aims to compute the Cosine Similarity Matrix pairing each test utterances against each enroll utterances. 
@@ -60,11 +62,18 @@ It takes as arguments :
 - `enroll_path` and `trial_path` :  the pickle files (test and enroll set) containing a dictionary of speaker embeddings of shape `embedding_dic[speaker_id] = List[speaker_embeddings]`
 - `L` :  which is the number of utterances used to compute the embedding of each test speaker
 - `seed` : to initialize the random number generator involved in the choice of the utterances chosen to compute the average embeddings
+- `model-type` : the attacker's name (ECAPA, WavLM_ECAPA, ResNet), this is used to manage paths and folder creation
+- `data_type` : orig, anon_B3 or anon_B5, also used to manage paths
 - `matrix_path` : if the SimMatrix has already been computed and saved
-It then computes and saves the matrix if not already done.
+
+/!\ Every argument except L has to be given to the config file. Matrix generation can be launch with the (generate_matrices.py)[generate_matrices.py] script, here is an example : 
+```py 
+python generate_matrices.py --config config/libri_ECAPA_B3.yaml --L 3 --matrix_path None
+```
+For reproducing our experiment, you need to compute 3 matrices for each attacker/anonymizer pair, for L=1, L=3, and L=5. The result matrices will be stored in experiment/`model_type`/
 
 #### Scores
-TO DO
+Once 
 
 ### Result Example
 ![all_scores](img/linkability_all_scores.png)
