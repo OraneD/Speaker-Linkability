@@ -54,7 +54,7 @@ This section presents how the repo works. Note that you have to complete all of 
 TO DO
 
 ### Computing Linkability
-The metric computation revolves around the `SimMatrix` & a few scripts to get per-speakers score and plot results.
+The metric computation revolves around the `SimMatrix` class & a few scripts to get per-speakers scores and plot results.
 
 #### SimMatrix
 The `SimMatrix` class aims to compute the Cosine Similarity Matrix pairing each test utterances against each enroll utterances. It also pre-computes the scores on N for further processing.
