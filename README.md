@@ -1,4 +1,4 @@
-This repository is an implementation of the Linkability metric for voice anonymization evaluation depicted in (article)[lien] and the reproduction of the experiment they led on the CommonVoice Dataset.
+This repository is an implementation of the Linkability metric for voice anonymization evaluation depicted in [paper](https://www.isca-archive.org/interspeech_2025/vauquier25_interspeech.pdf) and the reproduction and extension of the experiment they led on the CommonVoice Dataset.
 
 ---
 ## Data
@@ -57,7 +57,7 @@ TO DO
 The metric computation revolves around the `SimMatrix` & a few scripts to get per-speakers score and plot results.
 
 #### SimMatrix
-The `SimMatrix` class aims to compute the Cosine Similarity Matrix pairing each test utterances against each enroll utterances. 
+The `SimMatrix` class aims to compute the Cosine Similarity Matrix pairing each test utterances against each enroll utterances. It also pre-computes the scores on N for further processing.
 It takes as arguments :
 - `enroll_path` and `trial_path` :  the pickle files (test and enroll set) containing a dictionary of speaker embeddings of shape `embedding_dic[speaker_id] = List[speaker_embeddings]`
 - `L` :  which is the number of utterances used to compute the embedding of each test speaker
@@ -66,14 +66,19 @@ It takes as arguments :
 - `data_type` : orig, anon_B3 or anon_B5, also used to manage paths
 - `matrix_path` : if the SimMatrix has already been computed and saved
 
-/!\ Every argument except L has to be given to the config file. Matrix generation can be launch with the (generate_matrices.py)[generate_matrices.py] script, here is an example : 
+/!\ Every argument except L has to be given to the config file. Matrix generation can be launch with the [generate_matrices.py](generate_matrices.py) script, here is an example : 
 ```py 
 python generate_matrices.py --config config/libri_ECAPA_B3.yaml --L 3 --matrix_path None
 ```
-For reproducing our experiment, you need to compute 3 matrices for each attacker/anonymizer pair, for L=1, L=3, and L=5. The result matrices will be stored in experiment/`model_type`/
+For reproducing our experiment, you need to compute 3 matrices for each attacker/anonymizer pair, for L=1, L=3, and L=5. The resulting scores will be stored in experiment/`model_type`/*. There is one file per combination of a different N and different seed which makes 55 files per matrix. Note that the generation of a single matrix and score computing can take up to 3hours long.
 
 #### Scores
-Once 
+Once the scores has been computed, you just have to launch a few scripts in the scores/ and plot/ folder to get results : 
+* [store_score_per_speaker.py](scores/store_score_per_speaker.py) takes a matrix folder as input and processes it to generate a pickle dictionary shaped like {spk_id: {N: [score_seed1, score_seed2, ...]}}. This is necessary to plot score distributions and retrieve hard- and easy-to-link speakers.
+* [plot_linkability.py](plot/plot_linkability.py) plots the linkability as a function of N for each combination of attacker/anonymizer/L
+* [compute_speaker_scores.py](plot/compute_speaker_scores.py) plots the speaker score distribution for each combination of attacker/anonymier and L and generates the lists of hard-to-link and easy-to-link speakers for each context.
+* [plot_L_intersections.py](plot/plot_L_intersections.py)[plot_architecture_intersections.py](plot/plot_architecture_intersections.py)[plot_anonymizer_intersections.py](plot/plot_anonymizer_intersections.py) each plot intermediary results of similarities between speaker lists with one fixed variable.
+* [plot_mean_jaccard.py](plot/plot_mean_jaccard.py) plots the jaccard plot in the paper, it takes the value of the 3 plots generated above (hardcoded though so you'd have to change them).
 
 ### Result Example
 ![all_scores](img/linkability_all_scores.png)
