@@ -51,8 +51,10 @@ link anonymized recordings to the correct speaker, thus supporting the claim of 
 ## Usage
 This section presents how the repo works. Note that you have to complete all of the above steps in order to start using it : speaker embeddings (on anonymized or original speech) have to be extracted for enrollment and trial separatly, in the form of a .pkl dictionary with {utterance : embedding}. The config files and plot generations work for the experiment depicted in the paper, if you want to change de test set, modification should be done accordingly. 
 ### Installation
-TO DO
-
+```py
+pip install -r requirements.txt
+```
+Note that the repo can work without pytorch, the only use of it is when computing the cosine similarity matrix but this is not much longer on CPU.
 ### Computing Linkability
 The metric computation revolves around the `SimMatrix` class & a few scripts to get per-speakers scores and plot results.
 
