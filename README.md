@@ -80,8 +80,20 @@ Once the scores has been computed, you just have to launch a few scripts in the 
 * [plot_L_intersections.py](plot/plot_L_intersections.py)[plot_architecture_intersections.py](plot/plot_architecture_intersections.py)[plot_anonymizer_intersections.py](plot/plot_anonymizer_intersections.py) each plot intermediary results of similarities between speaker lists with one fixed variable.
 * [plot_mean_jaccard.py](plot/plot_mean_jaccard.py) plots the jaccard plot in the paper, it takes the value of the 3 plots generated above (hardcoded though so you'd have to change them).
 
-### Result Example
-![all_scores](img/linkability_all_scores.png)
+### Results
+#### Linkability
+![linkability](img/linkability_3attackers.png)
+
+#### Per-speaker score distribution
+![distribution](img/distribution_speakers.png)
+
+#### Jaccard similarities
+![anonymizer](img/anonymizer_intersection_easy_vs_hard.png)
+![attacker](img/attacker_intersection_3architectures.png)
+![L](img/L_easy_vs_hard.png)
+
+#### Mean Jaccard
+![mean](img/mean_jaccard_V2.png)
 
 
 
