@@ -7,7 +7,7 @@ name = "Anonymization_Linkability"
 version = "1.0.0"
 description = "Implementation of linkability metric for speech anonymization evaluation framework"
 authors = [
-    {name = "Orane Dufour", email = "orane.dufour@loria.fr"}
+    {name = "", email = ""}
 ]
 dependencies = []
 
