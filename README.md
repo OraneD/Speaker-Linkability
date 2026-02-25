@@ -90,7 +90,7 @@ Once the scores has been computed, you just have to launch a few scripts in the 
 #### Jaccard similarities
 ![anonymizer](img/anonymizer_intersection_easy_vs_hard.png)
 ![attacker](img/attacker_intersection_3architectures.png)
-![L](img/L_easy_vs_hard.png)
+![L](img/L_easy_hard.png)
 
 #### Mean Jaccard
 ![mean](img/mean_jaccard_V2.png)
